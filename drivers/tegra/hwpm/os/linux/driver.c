@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -251,9 +251,21 @@ static int tegra_hwpm_remove(struct platform_device *pdev)
 	return 0;
 }
 
+#if defined(NV_PLATFORM_DRIVER_STRUCT_REMOVE_RETURNS_VOID) /* Linux v6.11 */
+static inline void tegra_hwpm_remove_wrapper(struct platform_device *pdev)
+{
+	tegra_hwpm_remove(pdev);
+}
+#else
+static inline int tegra_hwpm_remove_wrapper(struct platform_device *pdev)
+{
+	return tegra_hwpm_remove(pdev);
+}
+#endif
+
 static struct platform_driver tegra_soc_hwpm_pdrv = {
 	.probe		= tegra_hwpm_probe,
-	.remove		= tegra_hwpm_remove,
+	.remove		= tegra_hwpm_remove_wrapper,
 	.driver		= {
 		.name	= TEGRA_SOC_HWPM_MODULE_NAME,
 		.of_match_table = of_match_ptr(tegra_soc_hwpm_of_match),
